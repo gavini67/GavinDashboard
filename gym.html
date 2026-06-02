@@ -3608,7 +3608,25 @@ img, video, canvas, svg { max-width: 100%; }
       })
       .subscribe();
     pcUploadPendingPhotos();
+    // Polling fallback: realtime replication may be disabled on the table,
+    // in which case the channel above never fires and other devices' changes
+    // (e.g. a new photo from the phone) would only appear on manual refresh.
+    // Re-pull every 15s while the tab is visible so updates show on their own.
+    setInterval(pcPullAndApply, 15000);
   })();
+
+  async function pcPullAndApply() {
+    if (!pcSupa || document.hidden) return;
+    try {
+      const { data, error } = await pcSupa
+        .from('app_state').select('data').eq('key', APP_KEY).maybeSingle();
+      if (error || !data || !data.data) return;
+      const incoming = JSON.stringify(data.data);
+      if (incoming === pcLastSyncedJson) return;
+      pcLastSyncedJson = incoming;
+      pcMaybeApplyRemote(data.data);
+    } catch (_) {}
+  }
 
   document.addEventListener('focusout', () => {
     setTimeout(pcApplyPendingIfReady, 0);
@@ -3617,7 +3635,7 @@ img, video, canvas, svg { max-width: 100%; }
   window.addEventListener('beforeunload', pcFlushPushOnUnload);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) pcFlushPushOnUnload();
-    else pcUploadPendingPhotos();
+    else { pcUploadPendingPhotos(); pcPullAndApply(); }
   });
 })();
 </script>
