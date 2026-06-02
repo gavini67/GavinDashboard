@@ -3485,6 +3485,22 @@ img, video, canvas, svg { max-width: 100%; }
     } catch (_) {}
   }
 
+  // Upload any photos this device still holds bytes for but never got a
+  // public url (e.g. the first upload ran before Supabase was ready, common
+  // in the home-screen PWA where the CDN script may load late or offline).
+  // Once a url lands, photosSave() schedules a push so the PC sees it.
+  async function pcUploadPendingPhotos() {
+    if (!pcSupa || !Array.isArray(photos)) return;
+    let changed = false;
+    for (const p of photos) {
+      if (p && p.dataUrl && !p.url) {
+        const url = await uploadPhotoToStorage(p.dataUrl);
+        if (url) { p.url = url; changed = true; }
+      }
+    }
+    if (changed) { photosSave(); photosRender(); }
+  }
+
   // Initial sync: connect Supabase, pull current state, subscribe to
   // realtime updates so other devices' changes appear instantly.
   (async function pcInitCloudSync() {
@@ -3516,6 +3532,7 @@ img, video, canvas, svg { max-width: 100%; }
         pcMaybeApplyRemote(payload.new.data);
       })
       .subscribe();
+    pcUploadPendingPhotos();
   })();
 
   document.addEventListener('focusout', () => {
@@ -3525,6 +3542,7 @@ img, video, canvas, svg { max-width: 100%; }
   window.addEventListener('beforeunload', pcFlushPushOnUnload);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) pcFlushPushOnUnload();
+    else pcUploadPendingPhotos();
   });
 })();
 </script>
