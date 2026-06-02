@@ -3399,7 +3399,12 @@ img, video, canvas, svg { max-width: 100%; }
             if (loc && loc.dataUrl && !p.dataUrl) return Object.assign({}, p, { dataUrl: loc.dataUrl });
             return p;
           });
-          const localOnly = localPhotos.filter((p) => p && !p.url && !remoteIds.has(p.id));
+          // Keep any photo this device still holds the bytes for (dataUrl)
+          // that the remote row doesn't list yet — covers the race where an
+          // upload set the local url but its push hadn't landed before a
+          // refresh. URL-only copies (synced from another device, no local
+          // bytes) absent from remote are treated as real deletions.
+          const localOnly = localPhotos.filter((p) => p && p.dataUrl && !remoteIds.has(p.id));
           const merged = [...mergedRemote, ...localOnly];
           const incoming = JSON.stringify(merged);
           if (localStorage.getItem(k) !== incoming) {
