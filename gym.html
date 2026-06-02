@@ -2619,6 +2619,10 @@ img, video, canvas, svg { max-width: 100%; }
   // ============================================================
   const WT_KEY = 'po_coach_weights';
   const PHOTO_KEY = 'po_coach_photos';
+  // Synced list of deleted photo ids (tombstones). Lets a delete on one
+  // device remove the photo everywhere, instead of the photo resurrecting
+  // from a device that still holds its local bytes.
+  const PHOTO_TOMB_KEY = 'po_coach_photos_deleted';
 
   function wtLoad() {
     try {
@@ -3273,7 +3277,14 @@ img, video, canvas, svg { max-width: 100%; }
       }, 3000);
       return;
     }
-    photos = photos.filter(p => p.id !== activePhotoId);
+    const deletedId = activePhotoId;
+    photos = photos.filter(p => p.id !== deletedId);
+    try {
+      let tombs = JSON.parse(localStorage.getItem(PHOTO_TOMB_KEY) || '[]');
+      if (!Array.isArray(tombs)) tombs = [];
+      if (tombs.indexOf(deletedId) === -1) tombs.push(deletedId);
+      localStorage.setItem(PHOTO_TOMB_KEY, JSON.stringify(tombs));
+    } catch {}
     photosSave();
     photosRender();
     closePhoto();
@@ -3327,7 +3338,7 @@ img, video, canvas, svg { max-width: 100%; }
   const SUPABASE_URL = 'https://obryogujguzgykipxntv.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_fEwA2_JQ2cfMsJSLlHDkyg_JO36mImE';
   const APP_KEY = 'po-coach';
-  const PC_SYNCED_KEYS = ['po_coach_v1', 'po_coach_workout_done', 'po_coach_weights', 'po_coach_photos'];
+  const PC_SYNCED_KEYS = ['po_coach_v1', 'po_coach_workout_done', 'po_coach_weights', 'po_coach_photos', 'po_coach_photos_deleted'];
 
   let pcSupa = null;
   let pcPushTimer = null;
@@ -3403,12 +3414,34 @@ img, video, canvas, svg { max-width: 100%; }
     let changed = false;
     try {
       for (const k of PC_SYNCED_KEYS) {
+        if (k === 'po_coach_photos_deleted') {
+          // Tombstones are union-merged so a delete is never lost and
+          // propagates to every device.
+          let localT = [];
+          try { localT = JSON.parse(localStorage.getItem(k) || '[]'); } catch {}
+          if (!Array.isArray(localT)) localT = [];
+          const remoteT = Array.isArray(remote[k]) ? remote[k] : [];
+          const union = Array.from(new Set([...localT, ...remoteT]));
+          const incoming = JSON.stringify(union);
+          if (localStorage.getItem(k) !== incoming) {
+            try { _pcOrigSet(k, incoming); changed = true; } catch {}
+          }
+          continue;
+        }
         if (k === 'po_coach_photos') {
           let localPhotos = [];
           try { localPhotos = JSON.parse(localStorage.getItem(k) || '[]'); } catch {}
           const localById = {};
           for (const p of localPhotos) { if (p && p.id) localById[p.id] = p; }
-          const remotePhotos = Array.isArray(remote[k]) ? remote[k] : [];
+          // Tombstoned ids (local + incoming remote) are removed everywhere,
+          // even if this device still holds the local bytes.
+          let localT = [];
+          try { localT = JSON.parse(localStorage.getItem(PHOTO_TOMB_KEY) || '[]'); } catch {}
+          if (!Array.isArray(localT)) localT = [];
+          const remoteT = Array.isArray(remote[PHOTO_TOMB_KEY]) ? remote[PHOTO_TOMB_KEY] : [];
+          const tombSet = new Set([...localT, ...remoteT]);
+          const remotePhotos = (Array.isArray(remote[k]) ? remote[k] : [])
+            .filter((p) => p && !tombSet.has(p.id));
           const remoteIds = new Set(remotePhotos.map((p) => p && p.id));
           // Remote photos win on url, but re-attach the local base64 copy as
           // an offline fallback so the image still shows if Storage is private
@@ -3423,7 +3456,9 @@ img, video, canvas, svg { max-width: 100%; }
           // upload set the local url but its push hadn't landed before a
           // refresh. URL-only copies (synced from another device, no local
           // bytes) absent from remote are treated as real deletions.
-          const localOnly = localPhotos.filter((p) => p && p.dataUrl && !remoteIds.has(p.id));
+          // Tombstoned photos are never kept.
+          const localOnly = localPhotos.filter((p) =>
+            p && p.dataUrl && !remoteIds.has(p.id) && !tombSet.has(p.id));
           const merged = [...mergedRemote, ...localOnly];
           const incoming = JSON.stringify(merged);
           if (localStorage.getItem(k) !== incoming) {
