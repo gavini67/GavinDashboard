@@ -149,7 +149,7 @@ main {
   margin-bottom: 8px; padding-bottom: 6px;
   border-bottom: 1px solid var(--border-soft);
 }
-.stack-window-icon { font-size: 16px; }
+.stack-window-icon { display:flex; align-items:center; color:var(--text-tertiary); }
 .stack-window-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
 .stack-window-time { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
 
@@ -431,7 +431,7 @@ main {
 }
 .stack-result:hover, .stack-result.is-focused { background: rgba(255, 255, 255, 0.06); }
 
-.stack-result-icon { font-size: 17px; flex-shrink: 0; width: 24px; text-align: center; }
+.stack-result-icon { flex-shrink:0; width:20px; display:flex; align-items:center; justify-content:center; color:var(--text-tertiary); }
 .stack-result-body { min-width: 0; flex: 1; }
 .stack-result-name {
   font-size: 13px; font-weight: 600;
@@ -1074,11 +1074,42 @@ main {
     { id: 'e3', name: 'XXXXX - Supplement of choice', dose: '', window: 'evening', note: 'how much MG, meal times, any data below', tag: null,    ordered: true  },
   ];
 
+  const SVGICONS = {
+    morning: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3"/><path d="M5.22 5.22l2.12 2.12"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="M16.66 7.34l2.12-2.12"/><line x1="2" y1="17" x2="22" y2="17"/><path d="M6 17a6 6 0 0 1 12 0"/></svg>`,
+    lunch:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></svg>`,
+    evening: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+    anytime: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+    pill:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5L3.5 13.5a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7z"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    workout: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="12" x2="16" y2="12"/><line x1="5" y1="8" x2="5" y2="16"/><line x1="19" y1="8" x2="19" y2="16"/><line x1="3" y1="9" x2="3" y2="15"/><line x1="21" y1="9" x2="21" y2="15"/></svg>`,
+    cup:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></svg>`,
+    sun:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>`,
+    brain:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.66z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.66z"/></svg>`,
+    bolt:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+    leaf:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
+    fish:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.54-8.5-6z"/><path d="M16 17.93a9.77 9.77 0 0 1 0-11.86"/><path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"/></svg>`,
+    moon:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+    bone:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 5 0c0-.81-.7-1.8 0-2.5l7-7z"/></svg>`,
+    seedling:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 1 1.4 4c-1.4.4-2.7.4-4-.5-1.3-.8-2.2-2.2-3.5-4.6 2.6-1.1 4.2-.5 6.1 1.1z"/></svg>`,
+    sparkle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    mushroom:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14c0-5 4.5-9 10-9s10 4 10 9H2z"/><line x1="8" y1="14" x2="8" y2="21"/><line x1="16" y1="14" x2="16" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>`,
+    grape:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="2.5"/><circle cx="16" cy="9" r="2.5"/><circle cx="12" cy="15" r="2.5"/><circle cx="8" cy="15" r="2.5"/><circle cx="16" cy="15" r="2.5"/><circle cx="12" cy="21" r="2.5"/><path d="M12 3v3"/></svg>`,
+    circle:  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/></svg>`,
+  };
+  // map supplement DB emoji to icon keys
+  const EMOJI_ICON = {
+    '🏋️': 'workout', '🥤': 'cup', '☀️': 'sun', '💊': 'pill', '🧠': 'brain',
+    '⚡': 'bolt', '🌿': 'leaf', '🐟': 'fish', '🌙': 'moon', '🦴': 'bone',
+    '🌱': 'seedling', '💅': 'sparkle', '🍄': 'mushroom', '🍇': 'grape',
+    '🥥': 'circle', '🍊': 'sun',
+  };
+  function svgIcon(key) { return SVGICONS[key] || SVGICONS.pill; }
+  function emojiSvg(emoji) { return svgIcon(EMOJI_ICON[emoji] || 'pill'); }
+
   const STACK_WINDOWS = [
-    { key: 'morning', icon: '🌅', title: 'Morning', time: '7–10 AM', cutoffHour: 10 },
-    { key: 'lunch',   icon: '🍽️', title: 'Lunch',   time: '12–2 PM', cutoffHour: 14 },
-    { key: 'evening', icon: '🌙', title: 'Evening', time: '9–11 PM', cutoffHour: 23 },
-    { key: 'anytime', icon: '⏱️', title: 'Anytime', time: 'No fixed window', cutoffHour: null },
+    { key: 'morning', icon: 'morning', title: 'Morning', time: '7–10 AM', cutoffHour: 10 },
+    { key: 'lunch',   icon: 'lunch',   title: 'Lunch',   time: '12–2 PM', cutoffHour: 14 },
+    { key: 'evening', icon: 'evening', title: 'Evening', time: '9–11 PM', cutoffHour: 23 },
+    { key: 'anytime', icon: 'anytime', title: 'Anytime', time: 'No fixed window', cutoffHour: null },
   ];
 
   // ====== SUPPLEMENT DATABASE — researched defaults ======
@@ -1245,7 +1276,7 @@ main {
       group.className = 'stack-window';
       group.innerHTML = `
         <div class="stack-window-header">
-          <span class="stack-window-icon">${win.icon}</span>
+          <span class="stack-window-icon">${svgIcon(win.icon)}</span>
           <span class="stack-window-title">${win.title}</span>
           <span class="stack-window-time">${win.time}</span>
         </div>`;
@@ -1495,7 +1526,7 @@ main {
       const winMeta = STACK_WINDOWS.find(w => w.key === s.window) || STACK_WINDOWS[3];
       return `
         <button class="stack-result" data-name="${escapeHtml(s.name)}" data-dose="${escapeHtml(s.dose)}" data-window="${s.window}" data-note="${escapeHtml(s.note)}">
-          <div class="stack-result-icon">${s.icon || '💊'}</div>
+          <div class="stack-result-icon">${emojiSvg(s.icon)}</div>
           <div class="stack-result-body">
             <div class="stack-result-name">${escapeHtml(s.name)}</div>
             <div class="stack-result-meta">${escapeHtml(s.dose)} · ${winMeta.icon} ${winMeta.title.toLowerCase()} · ${escapeHtml(s.note)}</div>
