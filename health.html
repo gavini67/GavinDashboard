@@ -844,6 +844,158 @@ main {
   })();
   </script>
 
+  <!-- ===== WORKOUT card ===== -->
+  <style>
+    .wo-section { margin-bottom: 32px; }
+    .wo-card { padding: 22px 22px 18px; background: var(--bg-card); border-radius: 16px; backdrop-filter: blur(24px) saturate(1.2); -webkit-backdrop-filter: blur(24px) saturate(1.2); box-shadow: 0 12px 40px rgba(0,0,0,0.45); }
+    .wo-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:12px; }
+    .wo-tag { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:6px; }
+    .wo-title { font-size:22px; font-weight:700; color:var(--text-primary); letter-spacing:-0.022em; }
+    .wo-sub { font-size:12px; color:var(--text-tertiary); margin-top:3px; }
+    .wo-ring-wrap { flex-shrink:0; position:relative; width:56px; height:56px; }
+    .wo-ring { width:56px; height:56px; transform:rotate(-90deg); }
+    .wo-ring-track { fill:none; stroke:rgba(255,255,255,0.06); stroke-width:5; }
+    .wo-ring-fill { fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; stroke-dasharray:150.8; stroke-dashoffset:150.8; transition:stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1); }
+    .wo-ring-center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+    .wo-progress-track { height:4px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; margin-bottom:18px; }
+    .wo-progress-fill { height:100%; width:0%; background:var(--accent); border-radius:999px; transition:width 0.5s cubic-bezier(0.22,1,0.36,1); }
+    .wo-exercise { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; background:var(--bg-secondary); margin-bottom:6px; cursor:pointer; border:1px solid transparent; transition:background 0.2s; user-select:none; }
+    .wo-exercise:hover { background:rgba(255,255,255,0.05); }
+    .wo-exercise.done { background:rgba(29,158,117,0.08); }
+    .wo-exercise.done .wo-name { color:var(--text-tertiary); text-decoration:line-through; }
+    .wo-check { width:26px; height:26px; border-radius:50%; border:2px solid var(--border-strong); background:var(--bg-card); display:flex; align-items:center; justify-content:center; font-size:12px; color:transparent; flex-shrink:0; transition:all 0.2s; }
+    .wo-exercise.done .wo-check { background:var(--accent); border-color:var(--accent); color:white; box-shadow:0 0 10px var(--accent-glow); }
+    .wo-name { font-size:13.5px; font-weight:600; color:var(--text-primary); line-height:1.2; }
+    .wo-sets { font-size:11px; color:var(--text-tertiary); margin-top:2px; font-family:var(--font-mono); }
+    .wo-left { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:rgba(29,158,117,0.12); border:1px solid rgba(29,158,117,0.25); padding:1px 5px; border-radius:4px; margin-left:5px; vertical-align:middle; }
+    .wo-off-card { text-align:center; padding:28px 16px 20px; }
+    .wo-off-icon { font-size:38px; margin-bottom:12px; }
+    .wo-off-title { font-size:20px; font-weight:700; color:var(--text-primary); margin-bottom:6px; letter-spacing:-0.02em; }
+    .wo-off-sub { font-size:13px; color:var(--text-tertiary); line-height:1.6; max-width:340px; margin:0 auto; }
+  </style>
+
+  <div class="wo-section">
+    <div class="section-title">Today's Workout</div>
+    <div class="wo-card">
+      <div id="woContent"></div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const WO_PFX = 'workout:done:';
+
+    function activeDate() {
+      const n = new Date();
+      if (n.getHours() < 6) n.setDate(n.getDate() - 1);
+      return n.toISOString().slice(0, 10);
+    }
+
+    const DAYS = {
+      0: { type: 'off', icon: '😴', name: 'Full Rest', sub: 'Recovery day. No gym. Prioritise sleep tonight — biggest sleep night before Monday training.' },
+      1: { type: 'train', label: 'DAY A · ROTATIONAL POWER', name: 'Day A', loc: 'Arista Gym', exercises: [
+        { id:'a1', name:'KB Hip Thrust', sets:'3 × 12L / 10R', note:'Shoulders on bench · add KB when ready' },
+        { id:'a2', name:'Cable High-to-Low Chop', sets:'4 × 8 each · 7.5kg', note:'Left +1 set', left:true },
+        { id:'a3', name:'Cable Pallof Press', sets:'3 × 10 each · 7.5kg', note:'' },
+        { id:'a4', name:'Cable Low-to-High Woodchop', sets:'3 × 10 each · 5kg', note:'' },
+        { id:'a5', name:'Lat Pulldown', sets:'3 × 10–12', note:'Start light' },
+        { id:'a6', name:'DB Row', sets:'3 × 10 each · 10–12kg', note:'Left +1 set', left:true },
+        { id:'a7', name:'DB Lateral Raise', sets:'3 × 10 · 4–6kg', note:'' },
+        { id:'a8', name:'Cable Anti-Rotation Hold', sets:'3 × 6 each · 5kg', note:'' },
+        { id:'a9', name:'Hanging Knee Raises', sets:'3 × 12', note:'' },
+      ]},
+      2: { type: 'off', icon: '🏌️', name: 'Trackman + Mobility', sub: 'Technical session — no gym. Trackman skill/feel work. Do full 20-min daily mobility routine.' },
+      3: { type: 'train', label: 'DAY B · LATERAL + POSTERIOR CHAIN', name: 'Day B', loc: 'Arista Gym', exercises: [
+        { id:'b1', name:'KB Hip Thrust', sets:'3 × 12L / 10R', note:'' },
+        { id:'b2', name:'DB Single Leg RDL', sets:'4 × 8 each · 8–10kg', note:'Left +1 set', left:true },
+        { id:'b3', name:'DB Lateral Lunge', sets:'3 × 10 each · 6–8kg', note:'Left +1 set', left:true },
+        { id:'b4', name:'KB Goblet Squat', sets:'3 × 10', note:'Light · form first' },
+        { id:'b5', name:'DB Bench Press', sets:'3 × 8–10', note:'Start light' },
+        { id:'b6', name:'Copenhagen Plank', sets:'3 × 20s each', note:'' },
+        { id:'b7', name:'KB Suitcase Carry', sets:'3 × 20 steps each', note:'' },
+        { id:'b8', name:'Hanging Knee Raises', sets:'3 × 12', note:'' },
+      ]},
+      4: { type: 'off', icon: '🧘', name: 'Yoga + Rest', sub: 'Yoga for golfers — YouTube, 20–30 min. Light day. No gym.' },
+      5: { type: 'train', label: 'DAY C · VERTICAL POWER + EXPLOSIVE', name: 'Day C', loc: 'Arista Gym', exercises: [
+        { id:'c1', name:'KB Hip Thrust', sets:'3 × 12L / 10R', note:'' },
+        { id:'c2', name:'Broad Jump', sets:'4 × 5', note:'Measure every session · baseline 135cm · target 160cm+' },
+        { id:'c3', name:'Box Step-Up Jump', sets:'3 × 6 each', note:'BW', left:true },
+        { id:'c4', name:'DB Split Squat', sets:'3 × 8 each', note:'BW → 4kg', left:true },
+        { id:'c5', name:'KB Single Leg Deadlift', sets:'4 × 8 each', note:'Left +1 set · light KB', left:true },
+        { id:'c6', name:'Cable Anti-Rotation Hold', sets:'3 × 6 each · 5kg', note:'' },
+        { id:'c7', name:'DB Lateral Raise', sets:'3 × 10 · 4–6kg', note:'' },
+        { id:'c8', name:'Hanging Knee Raises', sets:'3 × 12', note:'' },
+      ]},
+      6: { type: 'train', label: 'SPRINT DAY', name: 'Sprints', loc: 'Compound / Field — real grass only', exercises: [
+        { id:'s1', name:'Warm-up walk', sets:'2 min', note:'' },
+        { id:'s2', name:'30m Sprints', sets:'6–8 runs · 90% effort', note:'Full walk-back recovery between each' },
+        { id:'s3', name:'Cool-down walk', sets:'2 min', note:'' },
+      ]},
+    };
+
+    function getDone() { try { return JSON.parse(localStorage.getItem(WO_PFX + activeDate())) || {}; } catch { return {}; } }
+    function setDone(m) { localStorage.setItem(WO_PFX + activeDate(), JSON.stringify(m)); }
+
+    function toggle(id) { const d = getDone(); if (d[id]) delete d[id]; else d[id] = 1; setDone(d); render(); }
+
+    function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function render() {
+      const dow = new Date().getDay();
+      const wo = DAYS[dow];
+      const el = document.getElementById('woContent');
+
+      if (wo.type === 'off') {
+        el.innerHTML = `<div class="wo-off-card"><div class="wo-off-icon">${wo.icon}</div><div class="wo-off-title">${esc(wo.name)}</div><div class="wo-off-sub">${esc(wo.sub)}</div></div>`;
+        return;
+      }
+
+      const done = getDone();
+      const total = wo.exercises.length;
+      const doneCount = wo.exercises.filter(e => done[e.id]).length;
+      const pct = total ? (doneCount / total) * 100 : 0;
+      const C = 150.8;
+
+      const exHtml = wo.exercises.map(ex => {
+        const isDone = !!done[ex.id];
+        const leftBadge = ex.left ? '<span class="wo-left">L first</span>' : '';
+        const meta = [ex.sets, ex.note].filter(Boolean).join(' · ');
+        return `<div class="wo-exercise${isDone ? ' done' : ''}" data-woid="${esc(ex.id)}">
+          <div class="wo-check">${isDone ? '✓' : ''}</div>
+          <div>
+            <div class="wo-name">${esc(ex.name)}${leftBadge}</div>
+            ${meta ? `<div class="wo-sets">${esc(meta)}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      el.innerHTML = `
+        <div class="wo-header">
+          <div>
+            <div class="wo-tag">${esc(wo.label)}</div>
+            <div class="wo-title">${esc(wo.name)}</div>
+            <div class="wo-sub">${esc(wo.loc)}</div>
+          </div>
+          <div class="wo-ring-wrap">
+            <svg class="wo-ring" viewBox="0 0 56 56" aria-hidden="true">
+              <circle class="wo-ring-track" cx="28" cy="28" r="24"/>
+              <circle class="wo-ring-fill" cx="28" cy="28" r="24" style="stroke-dashoffset:${C * (1 - pct / 100)}"/>
+            </svg>
+            <div class="wo-ring-center">${doneCount}/${total}</div>
+          </div>
+        </div>
+        <div class="wo-progress-track"><div class="wo-progress-fill" style="width:${pct}%"></div></div>
+        <div>${exHtml}</div>`;
+
+      el.querySelectorAll('.wo-exercise[data-woid]').forEach(row => {
+        row.addEventListener('click', () => toggle(row.dataset.woid));
+      });
+    }
+
+    render();
+  })();
+  </script>
+
   <div class="section-title">Daily Stack</div>
 
   <div class="stack-card">
