@@ -2989,11 +2989,30 @@ img, video, canvas, svg { max-width: 100%; }
       img.src = dataUrl;
     });
   }
+  // Decode a base64 data: URL into a Blob WITHOUT fetch(). iOS WKWebView
+  // (the engine behind home-screen / standalone PWAs) fails to fetch() a
+  // data: URL, which silently broke photo uploads from the installed app
+  // while Safari worked fine.
+  function dataUrlToBlob(dataUrl) {
+    try {
+      const comma = dataUrl.indexOf(',');
+      const meta = dataUrl.slice(0, comma);
+      const body = dataUrl.slice(comma + 1);
+      const mimeMatch = meta.match(/data:([^;]+)/);
+      const mime = (mimeMatch && mimeMatch[1]) || 'image/jpeg';
+      const isB64 = meta.indexOf('base64') !== -1;
+      const binary = isB64 ? atob(body) : decodeURIComponent(body);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+      return new Blob([bytes], { type: mime });
+    } catch (e) { return null; }
+  }
   async function uploadPhotoToStorage(dataUrl) {
     if (!pcSupa) return null;
     try {
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
+      const blob = dataUrlToBlob(dataUrl);
+      if (!blob) return null;
       const filename = 'photo_' + Date.now() + '_' +
         Math.random().toString(36).slice(2, 10) + '.jpg';
       const { error } = await pcSupa.storage
