@@ -869,7 +869,7 @@ main {
     .wo-sets { font-size:11px; color:var(--text-tertiary); margin-top:2px; font-family:var(--font-mono); }
     .wo-left { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:rgba(29,158,117,0.12); border:1px solid rgba(29,158,117,0.25); padding:1px 5px; border-radius:4px; margin-left:5px; vertical-align:middle; }
     .wo-off-card { text-align:center; padding:28px 16px 20px; }
-    .wo-off-icon { font-size:38px; margin-bottom:12px; }
+    .wo-off-icon { margin-bottom:16px; color:rgba(255,255,255,0.28); display:flex; justify-content:center; }
     .wo-off-title { font-size:20px; font-weight:700; color:var(--text-primary); margin-bottom:6px; letter-spacing:-0.02em; }
     .wo-off-sub { font-size:13px; color:var(--text-tertiary); line-height:1.6; max-width:340px; margin:0 auto; }
   </style>
@@ -892,7 +892,7 @@ main {
     }
 
     const DAYS = {
-      0: { type: 'off', icon: '😴', name: 'Full Rest', sub: 'Recovery day. No gym. Prioritise sleep tonight — biggest sleep night before Monday training.' },
+      0: { type: 'off', icon: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>', name: 'Full Rest', sub: 'Recovery day. No gym. Prioritise sleep tonight — biggest sleep night before Monday training.' },
       1: { type: 'train', label: 'DAY A · ROTATIONAL POWER', name: 'Day A', loc: 'Arista Gym', exercises: [
         { id:'a1', name:'KB Hip Thrust', sets:'3 × 12L / 10R', note:'Shoulders on bench · add KB when ready' },
         { id:'a2', name:'Cable High-to-Low Chop', sets:'4 × 8 each · 7.5kg', note:'Left +1 set', left:true },
@@ -904,7 +904,7 @@ main {
         { id:'a8', name:'Cable Anti-Rotation Hold', sets:'3 × 6 each · 5kg', note:'' },
         { id:'a9', name:'Hanging Knee Raises', sets:'3 × 12', note:'' },
       ]},
-      2: { type: 'off', icon: '🏌️', name: 'Trackman + Mobility', sub: 'Technical session — no gym. Trackman skill/feel work. Do full 20-min daily mobility routine.' },
+      2: { type: 'off', icon: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M12 2l8 5-8 5"/></svg>', name: 'Trackman + Mobility', sub: 'Technical session — no gym. Trackman skill/feel work. Do full 20-min daily mobility routine.' },
       3: { type: 'train', label: 'DAY B · LATERAL + POSTERIOR CHAIN', name: 'Day B', loc: 'Arista Gym', exercises: [
         { id:'b1', name:'KB Hip Thrust', sets:'3 × 12L / 10R', note:'' },
         { id:'b2', name:'DB Single Leg RDL', sets:'4 × 8 each · 8–10kg', note:'Left +1 set', left:true },
@@ -915,7 +915,7 @@ main {
         { id:'b7', name:'KB Suitcase Carry', sets:'3 × 20 steps each', note:'' },
         { id:'b8', name:'Hanging Knee Raises', sets:'3 × 12', note:'' },
       ]},
-      4: { type: 'off', icon: '🧘', name: 'Yoga + Rest', sub: 'Yoga for golfers — YouTube, 20–30 min. Light day. No gym.' },
+      4: { type: 'off', icon: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v5"/><path d="M7.5 13.5c1.5 2 7.5 2 9 0"/><path d="M5 20c2.5-2.5 4-3 7-3s4.5.5 7 3"/></svg>', name: 'Yoga + Rest', sub: 'Yoga for golfers — YouTube, 20–30 min. Light day. No gym.' },
       5: { type: 'train', label: 'DAY C · VERTICAL POWER + EXPLOSIVE', name: 'Day C', loc: 'Arista Gym', exercises: [
         { id:'c1', name:'KB Hip Thrust', sets:'3 × 12L / 10R', note:'' },
         { id:'c2', name:'Broad Jump', sets:'4 × 5', note:'Measure every session · baseline 135cm · target 160cm+' },
