@@ -3066,7 +3066,10 @@ img, video, canvas, svg { max-width: 100%; }
       const e = photos.find(p => p.id === id);
       if (!e) return;
       e.url = url;
-      delete e.dataUrl;
+      // Keep the local base64 as an offline fallback so the image still
+      // renders on this device even if the public URL is unreachable.
+      // pcCollectState strips dataUrl before pushing, so the remote row
+      // stays lean.
       photosSave();
       photosRender();
     });
@@ -3384,10 +3387,20 @@ img, video, canvas, svg { max-width: 100%; }
         if (k === 'po_coach_photos') {
           let localPhotos = [];
           try { localPhotos = JSON.parse(localStorage.getItem(k) || '[]'); } catch {}
+          const localById = {};
+          for (const p of localPhotos) { if (p && p.id) localById[p.id] = p; }
           const remotePhotos = Array.isArray(remote[k]) ? remote[k] : [];
           const remoteIds = new Set(remotePhotos.map((p) => p && p.id));
+          // Remote photos win on url, but re-attach the local base64 copy as
+          // an offline fallback so the image still shows if Storage is private
+          // or unreachable on this device.
+          const mergedRemote = remotePhotos.map((p) => {
+            const loc = p && localById[p.id];
+            if (loc && loc.dataUrl && !p.dataUrl) return Object.assign({}, p, { dataUrl: loc.dataUrl });
+            return p;
+          });
           const localOnly = localPhotos.filter((p) => p && !p.url && !remoteIds.has(p.id));
-          const merged = [...remotePhotos, ...localOnly];
+          const merged = [...mergedRemote, ...localOnly];
           const incoming = JSON.stringify(merged);
           if (localStorage.getItem(k) !== incoming) {
             try { _pcOrigSet(k, incoming); changed = true; } catch {}
