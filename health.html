@@ -844,6 +844,239 @@ main {
   })();
   </script>
 
+  <!-- ===== TODAY'S GUIDE card ===== -->
+  <style>
+    .guide-section { margin-bottom: 32px; }
+    .guide-card { padding: 22px 22px 18px; background: var(--bg-card); border-radius: 16px; backdrop-filter: blur(24px) saturate(1.2); -webkit-backdrop-filter: blur(24px) saturate(1.2); box-shadow: 0 12px 40px rgba(0,0,0,0.45); }
+    .guide-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; gap:12px; flex-wrap:wrap; }
+    .guide-day-tag { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:6px; }
+    .guide-title { font-size:22px; font-weight:700; color:var(--text-primary); letter-spacing:-0.022em; }
+    .guide-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:2px; }
+    .guide-clock { font-family:var(--font-mono); font-size:12px; color:var(--text-tertiary); }
+    .guide-rec-pill { display:inline-flex; align-items:center; gap:5px; font-size:9.5px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; padding:3px 9px; border-radius:999px; border:1px solid; }
+    .guide-rec-pill.green  { color:#6BE3A4; border-color:rgba(107,227,164,0.40); background:rgba(107,227,164,0.08); }
+    .guide-rec-pill.yellow { color:#F2C063; border-color:rgba(242,192,99,0.40);  background:rgba(242,192,99,0.08); }
+    .guide-rec-pill.red    { color:#FF8A8A; border-color:rgba(255,138,138,0.40); background:rgba(255,138,138,0.08); }
+    .guide-rec-pill.none   { color:var(--text-tertiary); border-color:var(--border-strong); background:transparent; }
+    .guide-rec-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .guide-rec-pill.green  .guide-rec-dot { background:#6BE3A4; box-shadow:0 0 6px rgba(107,227,164,0.65); }
+    .guide-rec-pill.yellow .guide-rec-dot { background:#F2C063; box-shadow:0 0 6px rgba(242,192,99,0.65); }
+    .guide-rec-pill.red    .guide-rec-dot { background:#FF8A8A; box-shadow:0 0 6px rgba(255,138,138,0.65); }
+    .guide-rec-pill.none   .guide-rec-dot { background:rgba(255,255,255,0.2); }
+    .guide-now { padding:14px 16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-left:2px solid rgba(255,255,255,0.45); border-radius:0 12px 12px 0; margin-bottom:18px; }
+    .guide-now-eyebrow { font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:6px; }
+    .guide-now-name { font-size:16px; font-weight:700; color:var(--text-primary); margin-bottom:4px; line-height:1.3; }
+    .guide-now-detail { font-size:12.5px; color:var(--text-secondary); line-height:1.65; }
+    .guide-now-rec { font-size:12px; color:var(--text-secondary); margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05); font-style:italic; }
+    .guide-upcoming-label { font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:10px; }
+    .guide-item { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .guide-item:last-child { border-bottom:none; }
+    .guide-item-time { font-family:var(--font-mono); font-size:11px; color:var(--text-tertiary); flex-shrink:0; width:50px; padding-top:2px; }
+    .guide-item-icon { flex-shrink:0; color:var(--text-tertiary); padding-top:1px; }
+    .guide-item-body { flex:1; min-width:0; }
+    .guide-item-name { font-size:13.5px; font-weight:600; color:var(--text-primary); line-height:1.3; }
+    .guide-item-detail { font-size:11.5px; color:var(--text-tertiary); margin-top:2px; line-height:1.5; }
+  </style>
+
+  <div class="guide-section">
+    <div class="section-title">Today's Guide</div>
+    <div class="guide-card">
+      <div class="guide-head">
+        <div>
+          <div class="guide-day-tag" id="guideDayTag">—</div>
+          <div class="guide-title">What to do now</div>
+          <div class="guide-meta">
+            <span class="guide-clock" id="guideClock">—</span>
+            <span class="guide-rec-pill none" id="guideRecPill"><span class="guide-rec-dot"></span><span id="guideRecText">WHOOP not loaded</span></span>
+          </div>
+        </div>
+      </div>
+      <div id="guideNow"></div>
+      <div class="guide-upcoming-label">Coming up</div>
+      <div id="guideUpcoming"></div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const DKEYS = ['sun','mon','tue','wed','thu','fri','sat'];
+    const DLABELS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    const GI = {
+      bowl:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></svg>`,
+      gym:      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="12" x2="16" y2="12"/><line x1="5" y1="8" x2="5" y2="16"/><line x1="19" y1="8" x2="19" y2="16"/><line x1="3" y1="9" x2="3" y2="15"/><line x1="21" y1="9" x2="21" y2="15"/></svg>`,
+      bolt:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+      golf:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M12 2l8 5-8 5"/></svg>`,
+      moon:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+      mobility: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v5"/><path d="M7.5 13.5c1.5 2 7.5 2 9 0"/><path d="M5 20c2.5-2.5 4-3 7-3s4.5.5 7 3"/></svg>`,
+      rest:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+    };
+
+    // h = 24hr clock; 25 = 1am, 26 = 2am
+    const SCH = {
+      mon: [
+        { h:14,   icon:'bowl',     label:'Meal 1',               detail:'First meal — don\'t skip. 400–500 cal · 35g+ protein · rice OK.' },
+        { h:15.5, icon:'bolt',     label:'Pre-workout snack',    detail:'Rice + protein 1hr before gym. Keep it light.' },
+        { h:16,   icon:'gym',      label:'Day A — Arista Gym',   detail:'Rotational Power. Cable chop · Pallof · lat pulldown · DB row. ~90 min.',
+          rec:{ green:'Full intensity. Hit your working weights, full sets.', yellow:'-1 set per exercise, -15% load. No max effort sets.', red:'Skip gym. Mobility only today — body needs it.' }},
+        { h:18,   icon:'bowl',     label:'Post-workout Meal',    detail:'50g protein · rice · ~500 cal. Creatine 5g now.' },
+        { h:19,   icon:'mobility', label:'Daily Mobility',       detail:'20 min. Left hip IR block first — 90/90 · windshield wiper · pigeon.' },
+        { h:20,   icon:'bowl',     label:'Meal 3',               detail:'400 cal · protein source · vegetables for fiber.' },
+        { h:22,   icon:'bowl',     label:'Meal 4',               detail:'300–400 cal. Kitchen closes at midnight — GH pulse.' },
+        { h:25,   icon:'moon',     label:'Sleep',                detail:'Lights out 1am. 8.5–9.5hr. No food after midnight.' },
+      ],
+      tue: [
+        { h:14,   icon:'bowl',     label:'Meal 1',               detail:'First meal. 400–500 cal · 35g protein · rice.' },
+        { h:15,   icon:'golf',     label:'Trackman Session',     detail:'Feel and skill work — no heavy reps. Work on hip rotation feels, not positions.' },
+        { h:17,   icon:'bowl',     label:'Meal 2',               detail:'400 cal · protein · vegetables.' },
+        { h:19,   icon:'mobility', label:'Daily Mobility',       detail:'Full 20 min. Left hip IR is #1 — 90/90 · pigeon · couch stretch · dead bug.' },
+        { h:20,   icon:'bowl',     label:'Meal 3',               detail:'400 cal · protein · fiber.' },
+        { h:22,   icon:'bowl',     label:'Meal 4',               detail:'300–400 cal. Last meal before midnight.' },
+        { h:25,   icon:'moon',     label:'Sleep',                detail:'1am target. Good sleep before Wednesday gym.' },
+      ],
+      wed: [
+        { h:14,   icon:'bowl',     label:'Meal 1',               detail:'First meal. 400–500 cal · 35g+ protein · rice.' },
+        { h:15.5, icon:'bolt',     label:'Pre-workout snack',    detail:'Rice + protein 1hr before gym.' },
+        { h:16,   icon:'gym',      label:'Day B — Arista Gym',   detail:'Lateral + Posterior Chain. Single leg RDL · lateral lunge · bench · Copenhagen plank. ~90 min.',
+          rec:{ green:'Full intensity. Left leg leads all unilateral.', yellow:'-1 set, -15% load. Left priority still stands.', red:'Skip gym. Mobility only.' }},
+        { h:18,   icon:'bowl',     label:'Post-workout Meal',    detail:'50g protein · rice · ~500 cal. Creatine 5g.' },
+        { h:19,   icon:'mobility', label:'Daily Mobility',       detail:'20 min. Left hip IR + ankle work (knee-to-wall).' },
+        { h:20,   icon:'bowl',     label:'Meal 3',               detail:'400 cal · protein · vegetables.' },
+        { h:22,   icon:'bowl',     label:'Meal 4',               detail:'300–400 cal. Kitchen closes midnight.' },
+        { h:25,   icon:'moon',     label:'Sleep',                detail:'1am target.' },
+      ],
+      thu: [
+        { h:14,   icon:'bowl',     label:'Meal 1',               detail:'First meal. 400–500 cal · 35g protein.' },
+        { h:16,   icon:'mobility', label:'Yoga (YouTube)',        detail:'20–30 min · "yoga for golfers" · gentle. No strain.' },
+        { h:17,   icon:'bowl',     label:'Meal 2',               detail:'400 cal · protein · vegetables.' },
+        { h:19,   icon:'mobility', label:'Daily Mobility',       detail:'Full 20 min · left hip IR · couch stretch · dead bug · single leg balance.' },
+        { h:20,   icon:'bowl',     label:'Meal 3',               detail:'400 cal · protein · fiber.' },
+        { h:22,   icon:'bowl',     label:'Meal 4',               detail:'300–400 cal. Kitchen closes midnight.' },
+        { h:25,   icon:'moon',     label:'Sleep',                detail:'1am target.' },
+      ],
+      fri: [
+        { h:14,   icon:'bowl',     label:'Meal 1',               detail:'First meal. 400–500 cal · 35g+ protein · rice.' },
+        { h:15.5, icon:'bolt',     label:'Pre-workout snack',    detail:'Rice + protein 1hr before gym.' },
+        { h:16,   icon:'gym',      label:'Day C — Arista Gym',   detail:'Vertical Power + Explosive. Broad jump (measure!) · split squat · box step-up · SLDL. ~90 min.',
+          rec:{ green:'Full intensity. Measure broad jump — baseline 135cm, target 160cm+.', yellow:'-1 set, -15% load. Still measure broad jump.', red:'Skip gym. Mobility only.' }},
+        { h:18,   icon:'bowl',     label:'Post-workout Meal',    detail:'50g protein · rice · ~500 cal. Creatine 5g.' },
+        { h:19,   icon:'mobility', label:'Daily Mobility',       detail:'20 min. Left hip IR + ankle · pigeon · stability work.' },
+        { h:20,   icon:'bowl',     label:'Meal 3',               detail:'400 cal · protein · vegetables.' },
+        { h:22,   icon:'bowl',     label:'Meal 4',               detail:'300–400 cal. Kitchen closes midnight.' },
+        { h:25,   icon:'moon',     label:'Sleep',                detail:'1am target.' },
+      ],
+      sat: [
+        { h:14,   icon:'bowl',     label:'Meal 1',               detail:'First meal. 400–500 cal · 35g+ protein.' },
+        { h:15,   icon:'bolt',     label:'Sprint Session',       detail:'6–8 × 30m at 90% effort. Real grass only. Full walk-back recovery between each.' },
+        { h:16.5, icon:'golf',     label:'Round or Range',       detail:'Golf. Trackman if available. Play or skill session.' },
+        { h:18,   icon:'bowl',     label:'Post-activity Meal',   detail:'400–500 cal · 40g protein after sprints + golf.' },
+        { h:19.5, icon:'mobility', label:'Mobility',             detail:'20 min. Left hip IR is important after sprinting.' },
+        { h:20,   icon:'bowl',     label:'Meal 3',               detail:'400 cal · protein.' },
+        { h:22,   icon:'bowl',     label:'Meal 4',               detail:'300–400 cal.' },
+        { h:25,   icon:'moon',     label:'Sleep',                detail:'1am target.' },
+      ],
+      sun: [
+        { h:14,   icon:'bowl',     label:'Meal 1',               detail:'First meal. 400–500 cal · 35g protein.' },
+        { h:16,   icon:'rest',     label:'Full Rest Day',        detail:'No gym. Light walk is fine. Let everything recover.' },
+        { h:17,   icon:'bowl',     label:'Meal 2',               detail:'400 cal · protein · vegetables.' },
+        { h:19,   icon:'mobility', label:'Mobility (light)',     detail:'Optional — 10 min only. Don\'t push on rest day.' },
+        { h:20,   icon:'bowl',     label:'Meal 3',               detail:'400 cal · protein · fiber.' },
+        { h:22,   icon:'bowl',     label:'Meal 4',               detail:'300–400 cal. Kitchen closes midnight.' },
+        { h:23,   icon:'moon',     label:'Sleep Early — PRIORITY', detail:'Sleep before midnight if possible. Monday gym is tomorrow. Biggest sleep night of the week.' },
+      ],
+    };
+
+    function nowHour() {
+      const n = new Date(); let h = n.getHours() + n.getMinutes() / 60;
+      if (h < 6) h += 24; return h;
+    }
+    function todayKey() {
+      const n = new Date(); let d = n.getDay();
+      if (n.getHours() < 6) d = (d + 6) % 7;
+      return DKEYS[d];
+    }
+    function fmtH(h) {
+      const a = h >= 24 ? h - 24 : h;
+      const ampm = a < 12 ? 'AM' : 'PM';
+      const h12 = a === 0 ? 12 : a > 12 ? a - 12 : a;
+      const m = Math.round((a % 1) * 60);
+      return Math.floor(h12) + (m ? ':' + String(m).padStart(2,'0') : '') + ' ' + ampm;
+    }
+    function fmtClock() {
+      return new Date().toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', hour12:true });
+    }
+    function getRec() {
+      const badge = document.getElementById('whVerdictBadge');
+      if (badge && badge.textContent) {
+        const t = badge.textContent.toUpperCase();
+        if (t.includes('GREEN')) return 'green';
+        if (t.includes('YELLOW')) return 'yellow';
+        if (t.includes('RED')) return 'red';
+      }
+      const numEl = document.getElementById('whRecNum');
+      if (numEl && numEl.textContent && numEl.textContent !== '—') {
+        const s = parseInt(numEl.textContent);
+        if (!isNaN(s)) { if (s >= 67) return 'green'; if (s >= 34) return 'yellow'; return 'red'; }
+      }
+      return null;
+    }
+
+    function render() {
+      const nh = nowHour();
+      const dk = todayKey();
+      const dow = DKEYS.indexOf(dk);
+      const sch = SCH[dk] || [];
+      const rec = getRec();
+
+      const clockEl = document.getElementById('guideClock');
+      if (clockEl) clockEl.textContent = fmtClock();
+      const tagEl = document.getElementById('guideDayTag');
+      if (tagEl) tagEl.textContent = DLABELS[dow];
+      const pillEl = document.getElementById('guideRecPill');
+      const recTxtEl = document.getElementById('guideRecText');
+      if (pillEl && recTxtEl) {
+        pillEl.className = 'guide-rec-pill ' + (rec || 'none');
+        recTxtEl.textContent = rec ? rec.toUpperCase() : 'WHOOP not loaded';
+      }
+
+      let nowIdx = -1;
+      for (let i = 0; i < sch.length; i++) { if (sch[i].h <= nh) nowIdx = i; }
+      const nowBlock = nowIdx >= 0 ? sch[nowIdx] : null;
+      const upcoming = sch.slice(nowIdx + 1, nowIdx + 4);
+
+      const nowEl = document.getElementById('guideNow');
+      if (nowEl) {
+        if (!nowBlock) {
+          nowEl.innerHTML = `<div class="guide-now"><div class="guide-now-eyebrow">NOW</div><div class="guide-now-name">Wake up and eat</div><div class="guide-now-detail">First meal must happen within 1hr of waking. This is your biggest recurring issue — don't skip it again.</div></div>`;
+        } else {
+          let recHtml = '';
+          if (nowBlock.rec && rec) recHtml = `<div class="guide-now-rec">${nowBlock.rec[rec]}</div>`;
+          else if (nowBlock.rec && !rec) recHtml = `<div class="guide-now-rec">Connect WHOOP for intensity recommendation.</div>`;
+          nowEl.innerHTML = `<div class="guide-now"><div class="guide-now-eyebrow">NOW · since ${fmtH(nowBlock.h)}</div><div class="guide-now-name">${nowBlock.label}</div><div class="guide-now-detail">${nowBlock.detail}</div>${recHtml}</div>`;
+        }
+      }
+
+      const upEl = document.getElementById('guideUpcoming');
+      if (upEl) {
+        if (!upcoming.length) {
+          upEl.innerHTML = `<div style="font-size:12px;color:var(--text-quaternary);padding:8px 0;font-style:italic;">That's it for today. Sleep soon.</div>`;
+        } else {
+          upEl.innerHTML = upcoming.map(b => `<div class="guide-item"><div class="guide-item-time">${fmtH(b.h)}</div><div class="guide-item-icon">${GI[b.icon]||GI.bowl}</div><div class="guide-item-body"><div class="guide-item-name">${b.label}</div><div class="guide-item-detail">${b.detail}</div></div></div>`).join('');
+        }
+      }
+    }
+
+    render();
+    setInterval(render, 60000);
+
+    // Re-render when WHOOP loads recovery data
+    ['whVerdictBadge','whRecNum'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) new MutationObserver(render).observe(el, { childList:true, characterData:true, subtree:true });
+    });
+  })();
+  </script>
+
   <!-- ===== WORKOUT card ===== -->
   <style>
     .wo-section { margin-bottom: 32px; }
