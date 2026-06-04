@@ -331,7 +331,7 @@ body::after {
   letter-spacing: 0.10em; text-transform: uppercase;
   transition: background 0.25s, color 0.25s, border-color 0.25s;
 }
-.gm-streak-icon { font-size: 13px; }
+.gm-streak-icon { display:inline-flex; align-items:center; }
 .gm-streak-num {
   font-family: var(--font-mono);
   font-weight: 700;
@@ -566,6 +566,7 @@ body::after {
 .gm-add:active { transform: translateY(0); }
 
 .gm-polish {
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 11px 18px;
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 12px;
@@ -655,7 +656,7 @@ body::after {
           </div>
         </div>
         <div class="gm-streak" id="gmStreak">
-          <span class="gm-streak-icon">⚡</span>
+          <span class="gm-streak-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
           <span class="gm-streak-num" id="gmStreakNum">0</span>
           <span>day streak</span>
         </div>
@@ -667,7 +668,7 @@ body::after {
       <div class="goal-input-wrap gm-input-wrap">
         <input id="goalInput" class="gm-input" type="text" placeholder="Add a goal for today…" autocomplete="off">
         <button type="button" id="goalAddBtn"    class="gm-add">+ Add</button>
-        <button type="button" id="goalPolishBtn" class="gm-polish">✨ Polish</button>
+        <button type="button" id="goalPolishBtn" class="gm-polish"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12M5.64 18.36l2.12-2.12m8.48-8.48 2.12-2.12"/></svg> Polish</button>
         <div class="gm-status" id="polishStatus"></div>
       </div>
     </div>
@@ -686,7 +687,7 @@ body::after {
       <div class="goal-input-wrap gm-input-wrap">
         <input id="tomorrowInput" class="gm-input" type="text" placeholder="Add a goal for tomorrow…" autocomplete="off">
         <button type="button" id="tomorrowAddBtn"    class="gm-add">+ Add</button>
-        <button type="button" id="tomorrowPolishBtn" class="gm-polish">✨ Polish</button>
+        <button type="button" id="tomorrowPolishBtn" class="gm-polish"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12M5.64 18.36l2.12-2.12m8.48-8.48 2.12-2.12"/></svg> Polish</button>
         <div class="gm-status" id="tomorrowStatus"></div>
       </div>
     </div>
@@ -698,7 +699,7 @@ body::after {
 (function () {
   'use strict';
 
-  // Paste your Anthropic key here to enable ✨ Polish. Empty = falls back to plain add.
+  // Paste your Anthropic key here to enable <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12M5.64 18.36l2.12-2.12m8.48-8.48 2.12-2.12"/></svg> Polish. Empty = falls back to plain add.
   const ANTHROPIC_API_KEY = '';
 
   const WAKE_HOUR  = 8;
@@ -959,11 +960,11 @@ body::after {
     percentEl.textContent = Math.floor(percent) + '%';
 
     let phase, status;
-    if (percent < 25)      { phase = 'MORNING';   status = '☀️ Morning — fresh start'; }
-    else if (percent < 50) { phase = 'MIDDAY';    status = '⚡ Midday — keep moving'; }
-    else if (percent < 75) { phase = 'AFTERNOON'; status = '🔥 Afternoon — push it'; }
-    else if (percent < 90) { phase = 'EVENING';   status = '⏳ Evening — wrap up'; }
-    else                   { phase = 'BEDTIME';   status = '🌙 Bedtime soon'; }
+    if (percent < 25)      { phase = 'MORNING';   status = 'Morning — fresh start'; }
+    else if (percent < 50) { phase = 'MIDDAY';    status = 'Midday — keep moving'; }
+    else if (percent < 75) { phase = 'AFTERNOON'; status = 'Afternoon — push it'; }
+    else if (percent < 90) { phase = 'EVENING';   status = 'Evening — wrap up'; }
+    else                   { phase = 'BEDTIME';   status = 'Bedtime soon'; }
     phaseEl.textContent  = phase;
     statusEl.textContent = status;
 
@@ -1069,7 +1070,7 @@ body::after {
     const queueBtn = document.createElement('button');
     queueBtn.type = 'button';
     queueBtn.className = 'gm-queue-btn' + (goal.queued ? ' gm-queue-active' : '');
-    queueBtn.textContent = '⚡';
+    queueBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
     queueBtn.title = 'Queue for productivity window';
     if (readOnly) queueBtn.disabled = true;
     queueBtn.addEventListener('click', () => {
