@@ -1229,6 +1229,531 @@ main {
   })();
   </script>
 
+  <!-- ===== NUTRITION TRACKER ===== -->
+  <style>
+  .nutri-section { margin-bottom: 32px; }
+  .nutri-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 22px 22px 20px;
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  }
+  .nutri-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+  .nutri-title {
+    font-size: 22px; font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.022em; line-height: 1.15;
+    margin-bottom: 18px;
+  }
+  /* Rings row */
+  .nutri-rings {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: 22px;
+  }
+  .nutri-ring-wrap {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+  }
+  .nutri-ring-box {
+    position: relative; width: 72px; height: 72px;
+  }
+  .nutri-ring-svg {
+    display: block;
+    transform: rotate(-90deg);
+  }
+  .nutri-ring-track {
+    fill: none;
+    stroke: rgba(255,255,255,0.06);
+    stroke-width: 4.5;
+  }
+  .nutri-ring-fill {
+    fill: none;
+    stroke-width: 4.5;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.7s cubic-bezier(0.22,1,0.36,1);
+  }
+  .nutri-ring-center {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .nutri-ring-val {
+    font-family: var(--font-mono);
+    font-size: 14px; font-weight: 700;
+    color: var(--text-primary); line-height: 1;
+    transition: color 0.4s;
+  }
+  .nutri-ring-label {
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-tertiary); text-align: center;
+  }
+  .nutri-ring-sub {
+    font-family: var(--font-mono);
+    font-size: 9px; color: var(--text-quaternary);
+    text-align: center; margin-top: -2px;
+  }
+  /* Sub-section labels */
+  .nutri-sub-label {
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-tertiary); margin-bottom: 8px;
+  }
+  /* Quick add */
+  .nutri-quick-grid {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 16px;
+  }
+  .nutri-quick-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 11px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 12px; font-weight: 500;
+    cursor: pointer; font-family: var(--font);
+    white-space: nowrap; line-height: 1;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .nutri-quick-btn:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.14);
+    color: var(--text-primary);
+  }
+  .nutri-quick-btn.ntq-custom {
+    color: var(--accent);
+    border-color: rgba(29,158,117,0.3);
+  }
+  .nutri-quick-btn.ntq-custom:hover {
+    background: rgba(29,158,117,0.08);
+  }
+  /* Custom form */
+  .nutri-form {
+    background: rgba(0,0,0,0.22);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+    margin-bottom: 16px; display: none;
+  }
+  .nutri-form.open { display: block; }
+  .nutri-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 58px 58px 50px;
+    gap: 6px; margin-bottom: 10px;
+  }
+  .nutri-field { display: flex; flex-direction: column; gap: 3px; }
+  .nutri-field-lbl {
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .nutri-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-primary);
+    font-family: var(--font); font-size: 13px;
+    padding: 7px 8px; outline: none; width: 100%;
+    transition: border-color 0.15s; min-width: 0;
+  }
+  .nutri-input:focus { border-color: rgba(255,255,255,0.2); }
+  .nutri-input::placeholder { color: var(--text-quaternary); }
+  .nutri-form-actions {
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  .nutri-btn-add {
+    background: var(--accent); border: none;
+    border-radius: 8px; color: #fff;
+    font-size: 13px; font-weight: 600;
+    padding: 8px 18px; cursor: pointer;
+    font-family: var(--font);
+    transition: opacity 0.15s;
+  }
+  .nutri-btn-add:hover { opacity: 0.85; }
+  .nutri-btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-tertiary);
+    font-size: 13px; padding: 8px 14px;
+    cursor: pointer; font-family: var(--font);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .nutri-btn-cancel:hover {
+    border-color: var(--border-strong);
+    color: var(--text-secondary);
+  }
+  /* Log */
+  .nutri-log-head {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 8px;
+  }
+  .nutri-btn-clear {
+    background: none; border: none;
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-quaternary);
+    cursor: pointer; padding: 0;
+    transition: color 0.15s;
+  }
+  .nutri-btn-clear:hover { color: rgba(239,68,68,0.7); }
+  .nutri-empty {
+    text-align: center; padding: 18px 0 4px;
+    color: var(--text-quaternary); font-size: 12.5px;
+  }
+  .nutri-log-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .nutri-log-item:last-child { border-bottom: none; }
+  .nutri-log-time {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--text-tertiary); flex-shrink: 0; width: 38px;
+  }
+  .nutri-log-name {
+    flex: 1; font-size: 13px; font-weight: 500;
+    color: var(--text-primary); min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .nutri-log-macros {
+    font-family: var(--font-mono); font-size: 10.5px;
+    color: var(--text-tertiary); flex-shrink: 0;
+  }
+  .nutri-log-del {
+    background: none; border: none;
+    color: var(--text-quaternary); cursor: pointer;
+    padding: 2px; display: flex; align-items: center;
+    opacity: 0.5; flex-shrink: 0;
+    transition: opacity 0.15s, color 0.15s;
+  }
+  .nutri-log-del:hover { opacity: 1; color: rgba(239,68,68,0.8); }
+  /* Warning banner */
+  .nutri-warn {
+    display: none; align-items: flex-start; gap: 9px;
+    background: rgba(255,138,77,0.07);
+    border: 1px solid rgba(255,138,77,0.22);
+    border-radius: 10px; padding: 11px 13px; margin-top: 14px;
+  }
+  .nutri-warn.visible { display: flex; }
+  .nutri-warn-icon { color: #FF8A4D; flex-shrink: 0; padding-top: 1px; }
+  .nutri-warn-text { font-size: 12.5px; color: #FF8A4D; line-height: 1.55; }
+  /* WHOOP recovery note */
+  .nutri-rec-note {
+    display: none; align-items: center; gap: 7px;
+    padding: 8px 12px; border-radius: 8px;
+    font-size: 12px; margin-bottom: 16px;
+  }
+  .nutri-rec-note.visible { display: flex; }
+  .nutri-rec-note.red {
+    background: rgba(255,138,138,0.07);
+    color: rgba(255,138,138,0.85);
+    border: 1px solid rgba(255,138,138,0.18);
+  }
+  .nutri-rec-note.yellow {
+    background: rgba(242,192,99,0.07);
+    color: rgba(242,192,99,0.85);
+    border: 1px solid rgba(242,192,99,0.18);
+  }
+  @media (max-width: 360px) {
+    .nutri-form-grid {
+      grid-template-columns: 1fr 50px 50px 44px;
+      gap: 4px;
+    }
+  }
+  </style>
+
+  <div class="nutri-section">
+    <div class="section-title">Nutrition</div>
+    <div class="nutri-card">
+      <div class="nutri-eyebrow">Daily Fuel</div>
+      <div class="nutri-title">Macro Tracker</div>
+
+      <!-- WHOOP rec note -->
+      <div class="nutri-rec-note" id="nutriRecNote">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="nutriRecNoteText"></span>
+      </div>
+
+      <!-- Three macro rings -->
+      <div class="nutri-rings" id="nutriRings"></div>
+
+      <!-- Quick add presets -->
+      <div class="nutri-sub-label">Quick Add</div>
+      <div class="nutri-quick-grid" id="nutriQuickGrid"></div>
+
+      <!-- Custom entry form -->
+      <div class="nutri-form" id="nutriForm">
+        <div class="nutri-form-grid">
+          <div class="nutri-field">
+            <span class="nutri-field-lbl">Food</span>
+            <input class="nutri-input" id="nutriName" type="text" placeholder="e.g. Chicken + rice" autocomplete="off">
+          </div>
+          <div class="nutri-field">
+            <span class="nutri-field-lbl">Cal</span>
+            <input class="nutri-input" id="nutriCalI" type="number" min="0" max="9999" placeholder="0">
+          </div>
+          <div class="nutri-field">
+            <span class="nutri-field-lbl">Prot g</span>
+            <input class="nutri-input" id="nutriProI" type="number" min="0" max="999" placeholder="0">
+          </div>
+          <div class="nutri-field">
+            <span class="nutri-field-lbl">Fib g</span>
+            <input class="nutri-input" id="nutriFibI" type="number" min="0" max="99" placeholder="0">
+          </div>
+        </div>
+        <div class="nutri-form-actions">
+          <button class="nutri-btn-cancel" id="nutriBtnCancel">Cancel</button>
+          <button class="nutri-btn-add" id="nutriBtnAdd">Add</button>
+        </div>
+      </div>
+
+      <!-- Meal log -->
+      <div class="nutri-log-head">
+        <span class="nutri-sub-label" style="margin-bottom:0">Logged Today</span>
+        <button class="nutri-btn-clear" id="nutriBtnClear">Clear all</button>
+      </div>
+      <div id="nutriLog"></div>
+
+      <!-- Low-calorie warning -->
+      <div class="nutri-warn" id="nutriWarn">
+        <span class="nutri-warn-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        <span class="nutri-warn-text" id="nutriWarnText"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    var KEY_LOG  = 'nutri:log';
+    var KEY_DATE = 'nutri:date';
+    var TARGETS  = { cal: 1950, pro: 120, fib: 25 };
+    var CIRC     = 188.5; /* 2 * PI * 30 */
+
+    var PRESETS = [
+      { name: 'Rice + Chicken',     cal: 580, pro: 48, fib: 2, icon: 'bowl'  },
+      { name: 'Protein Shake',      cal: 220, pro: 25, fib: 1, icon: 'shake' },
+      { name: 'Eggs (3) + Rice',    cal: 420, pro: 22, fib: 1, icon: 'bowl'  },
+      { name: 'Canned Tuna + Rice', cal: 460, pro: 38, fib: 1, icon: 'bowl'  },
+      { name: 'Banana',             cal:  90, pro:  1, fib: 3, icon: 'fruit' },
+      { name: 'Broccoli / Veg',     cal:  55, pro:  4, fib: 5, icon: 'leaf'  },
+    ];
+
+    var RING_COLORS = { cal: '#1D9E75', pro: '#5E9EFF', fib: '#F2C063' };
+
+    var NI = {
+      bowl:  '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15c-4.42 0-8-1.79-8-4h16c0 2.21-3.58 4-8 4z"/><path d="M4 11h16"/><path d="M12 15v4"/><path d="M8 19h8"/></svg>',
+      shake: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8l1 6H7Z"/><path d="M7 8l1 13h8l1-13"/><line x1="10" y1="13" x2="14" y2="13"/></svg>',
+      fruit: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4v1H8V6a4 4 0 0 1 4-4z"/><path d="M8 7v10a4 4 0 0 0 8 0V7"/></svg>',
+      leaf:  '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.73 2.9 21.23 5.28 22.11 6.5 21c1-.9 1.5-2 3.5-3 3 0 8-1 12-8-3 3-5.4 4.5-8 5 3-4 3-9 3-15z"/></svg>',
+      plus:  '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+      del:   '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    };
+
+    /* ── date: treat before 6am as previous day ── */
+    function activeDate() {
+      var n = new Date();
+      if (n.getHours() < 6) { n.setDate(n.getDate() - 1); }
+      return n.toISOString().slice(0, 10);
+    }
+
+    /* ── storage ── */
+    function loadLog() {
+      var today = activeDate();
+      if (localStorage.getItem(KEY_DATE) !== today) {
+        localStorage.setItem(KEY_DATE, today);
+        localStorage.setItem(KEY_LOG, '[]');
+      }
+      try { return JSON.parse(localStorage.getItem(KEY_LOG) || '[]'); } catch(e) { return []; }
+    }
+    function saveLog(log) {
+      localStorage.setItem(KEY_DATE, activeDate());
+      localStorage.setItem(KEY_LOG, JSON.stringify(log));
+    }
+
+    /* ── maths ── */
+    function totals(log) {
+      return log.reduce(function(a, e) {
+        return { cal: a.cal + (e.cal | 0), pro: a.pro + (e.pro | 0), fib: a.fib + (e.fib | 0) };
+      }, { cal: 0, pro: 0, fib: 0 });
+    }
+    function escH(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── ring SVG builder ── */
+    function buildRing(val, target, color) {
+      var pct  = Math.min(val / Math.max(target, 1), 1);
+      var fill = (pct * CIRC).toFixed(2);
+      var glow = pct >= 1 ? 'filter:drop-shadow(0 0 5px ' + color + ')' : '';
+      var dispVal = (target === TARGETS.cal && val >= 1000)
+        ? (val / 1000).toFixed(1) + 'k'
+        : String(val);
+      var valColor = pct >= 1 ? ' style="color:' + color + '"' : '';
+      return '<div class="nutri-ring-box">' +
+        '<svg class="nutri-ring-svg" width="72" height="72" viewBox="0 0 72 72">' +
+          '<circle class="nutri-ring-track" cx="36" cy="36" r="30"/>' +
+          '<circle class="nutri-ring-fill" cx="36" cy="36" r="30"' +
+            ' stroke="' + color + '"' +
+            ' stroke-dasharray="' + fill + ' ' + CIRC + '"' +
+            (glow ? ' style="' + glow + '"' : '') + '/>' +
+        '</svg>' +
+        '<div class="nutri-ring-center">' +
+          '<div class="nutri-ring-val"' + valColor + '>' + dispVal + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* ── render ── */
+    function render() {
+      var log = loadLog();
+      var tot = totals(log);
+
+      /* rings */
+      var ringDefs = [
+        { key:'cal', label:'Calories', sub: tot.cal + '/' + TARGETS.cal },
+        { key:'pro', label:'Protein',  sub: tot.pro + 'g/' + TARGETS.pro + 'g' },
+        { key:'fib', label:'Fiber',    sub: tot.fib + 'g/' + TARGETS.fib + 'g' },
+      ];
+      document.getElementById('nutriRings').innerHTML = ringDefs.map(function(r) {
+        return '<div class="nutri-ring-wrap">' +
+          buildRing(tot[r.key], TARGETS[r.key], RING_COLORS[r.key]) +
+          '<div class="nutri-ring-label">' + r.label + '</div>' +
+          '<div class="nutri-ring-sub">' + r.sub + '</div>' +
+        '</div>';
+      }).join('');
+
+      /* log */
+      var logEl = document.getElementById('nutriLog');
+      if (!log.length) {
+        logEl.innerHTML = '<div class="nutri-empty">No meals logged — tap a preset to start.</div>';
+      } else {
+        logEl.innerHTML = log.map(function(e, i) {
+          var d = new Date(e.ts);
+          var hh = String(d.getHours()).padStart(2,'0');
+          var mm = String(d.getMinutes()).padStart(2,'0');
+          return '<div class="nutri-log-item">' +
+            '<span class="nutri-log-time">' + hh + ':' + mm + '</span>' +
+            '<span class="nutri-log-name">' + escH(e.name) + '</span>' +
+            '<span class="nutri-log-macros">' + e.cal + 'c·' + e.pro + 'p·' + e.fib + 'f</span>' +
+            '<button class="nutri-log-del" data-i="' + i + '" aria-label="Remove">' + NI.del + '</button>' +
+          '</div>';
+        }).join('');
+      }
+
+      /* warning */
+      var warn = document.getElementById('nutriWarn');
+      var wTxt = document.getElementById('nutriWarnText');
+      var h = new Date().getHours();
+      var msg = '';
+      if (h >= 22 && tot.cal < 1200) {
+        msg = 'Kitchen closes at midnight — only ' + tot.cal + ' cal logged. Get a meal in now.';
+      } else if (h >= 20 && tot.cal < 800) {
+        msg = 'Under 800 cal by 8 pm. First meal was likely skipped — eat before midnight.';
+      } else if (h >= 20 && tot.pro < 60) {
+        msg = 'Only ' + tot.pro + 'g protein logged. ' + (TARGETS.pro - tot.pro) + 'g still needed today.';
+      }
+      if (msg) { wTxt.textContent = msg; warn.classList.add('visible'); }
+      else      { warn.classList.remove('visible'); }
+
+      /* WHOOP integration */
+      var recNote = document.getElementById('nutriRecNote');
+      var recTxt  = document.getElementById('nutriRecNoteText');
+      var verdictEl = document.getElementById('whVerdictBadge');
+      var verdict = verdictEl ? verdictEl.textContent.trim().toUpperCase() : '';
+      if (verdict === 'RED') {
+        recTxt.textContent = 'Recovery day — prioritise protein, keep calories moderate.';
+        recNote.className = 'nutri-rec-note visible red';
+      } else if (verdict === 'YELLOW') {
+        recTxt.textContent = 'Yellow recovery — fuel normally, no extra loading needed.';
+        recNote.className = 'nutri-rec-note visible yellow';
+      } else {
+        recNote.className = 'nutri-rec-note';
+      }
+    }
+
+    /* ── quick-add grid ── */
+    var qGrid = document.getElementById('nutriQuickGrid');
+    qGrid.innerHTML = PRESETS.map(function(p, i) {
+      return '<button class="nutri-quick-btn" data-pi="' + i + '">' +
+        (NI[p.icon] || NI.bowl) + ' ' + escH(p.name) + '</button>';
+    }).join('') +
+    '<button class="nutri-quick-btn ntq-custom" id="nutriBtnCustom">' +
+      NI.plus + ' Custom</button>';
+
+    qGrid.addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-pi]');
+      if (btn) { var p = PRESETS[+btn.dataset.pi]; addEntry(p.name, p.cal, p.pro, p.fib); return; }
+      if (e.target.closest('#nutriBtnCustom')) {
+        document.getElementById('nutriForm').classList.add('open');
+        document.getElementById('nutriName').focus();
+      }
+    });
+
+    /* ── custom form ── */
+    function clearForm() {
+      ['nutriName','nutriCalI','nutriProI','nutriFibI'].forEach(function(id) {
+        document.getElementById(id).value = '';
+      });
+    }
+    document.getElementById('nutriBtnCancel').addEventListener('click', function() {
+      document.getElementById('nutriForm').classList.remove('open');
+      clearForm();
+    });
+    document.getElementById('nutriBtnAdd').addEventListener('click', function() {
+      var name = document.getElementById('nutriName').value.trim();
+      if (!name) { document.getElementById('nutriName').focus(); return; }
+      addEntry(name,
+        document.getElementById('nutriCalI').value,
+        document.getElementById('nutriProI').value,
+        document.getElementById('nutriFibI').value
+      );
+      document.getElementById('nutriForm').classList.remove('open');
+      clearForm();
+    });
+    ['nutriName','nutriCalI','nutriProI','nutriFibI'].forEach(function(id) {
+      document.getElementById(id).addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('nutriBtnAdd').click();
+      });
+    });
+
+    /* ── log interactions ── */
+    document.getElementById('nutriLog').addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-i]');
+      if (!btn) return;
+      var log = loadLog(); log.splice(+btn.dataset.i, 1); saveLog(log); render();
+    });
+    document.getElementById('nutriBtnClear').addEventListener('click', function() {
+      if (!loadLog().length) return; saveLog([]); render();
+    });
+
+    /* ── add entry ── */
+    function addEntry(name, cal, pro, fib) {
+      var log = loadLog();
+      log.push({ name: name, cal: +cal || 0, pro: +pro || 0, fib: +fib || 0, ts: Date.now() });
+      saveLog(log); render();
+    }
+
+    setInterval(render, 60 * 1000);
+    render();
+  })();
+  </script>
+
   <div class="section-title">Daily Stack</div>
 
   <div class="stack-card">
@@ -1829,7 +2354,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (typeof initCloudSync !== 'function') return;
   initCloudSync({
     appKey: 'health',
-    syncedKeys: ['stack:items', 'stack:version', 'stack:low', 'po_water_v1'],
+    syncedKeys: ['stack:items', 'stack:version', 'stack:low', 'po_water_v1', 'nutri:log', 'nutri:date'],
     syncedPrefixes: ['stack:taken:'],
     onApplied: function () { window.dispatchEvent(new Event('storage')); }
   });
