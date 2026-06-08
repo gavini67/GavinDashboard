@@ -17,78 +17,95 @@
 <script>
 const CONFIG = {
   appTitle: "Gavin's Training",
-
-  // Weight unit shown everywhere.
   units: "kg",
 
-  // Gyms
   gyms: [
     { id: "arista", name: "Arista Gym" },
     { id: "home",   name: "Home" },
   ],
 
-  // Golf-specific training split
+  // Mon=A · Tue=Trackman · Wed=B · Thu=D · Fri=C · Sat=Sprints · Sun=Rest
   days: [
-    { id: "dayA", name: "Day A" },
-    { id: "dayB", name: "Day B" },
-    { id: "dayC", name: "Day C" },
+    { id: "dayA",     name: "Day A" },
+    { id: "dayB",     name: "Day B" },
+    { id: "dayC",     name: "Day C" },
+    { id: "dayD",     name: "Day D" },
+    { id: "trackman", name: "Trackman" },
+    { id: "sprints",  name: "Sprints" },
   ],
 
-  // Mon=Day A, Tue=rest, Wed=Day B, Thu=rest, Fri=Day C, Sat/Sun=rest
-  splitRotation: ["dayA", "rest", "dayB", "rest", "dayC", "rest", "rest"],
+  splitRotation: ["dayA", "trackman", "dayB", "dayD", "dayC", "sprints", "rest"],
 
-  // Anchor: 2026-06-02 (Monday) was Day A
-  splitAnchor: {
-    date: "2026-06-02",
-    splitId: "dayA"
-  },
+  // 2026-06-08 = Monday = Day A
+  splitAnchor: { date: "2026-06-08", splitId: "dayA" },
 
-  // Hit this many reps on top set → add weight next session
   upgradeAtReps: 8,
+  composition: { enabled: true, yearsTraining: 1, windowDays: 30 },
 
-  composition: {
-    enabled: true,
-    yearsTraining: 1,
-    windowDays: 30
-  },
+  // ─── PRIMERS before every session (Bernice's Primers) ─────────────
+  //   Banded Glute Bridge × 10
+  //   Plank × 30s
+  //   Suitcase Carry × 20 steps each side
+  // ─── COOLDOWN after every session (Rory's Breathing Cooldown) ─────
+  //   4s inhale · 6s exhale · 3-4 minutes · seated or lying
+  // ─── LEFT LEG RULE ─────────────────────────────────────────────────
+  //   Left always goes first on unilateral exercises. Left +1 set.
+  // ─── FLOOR RULE ────────────────────────────────────────────────────
+  //   No floor exercises. Use bench for all floor substitutions.
+  // ─── GROWTH PLATE ──────────────────────────────────────────────────
+  //   No barbell back squat · no heavy OHP · no Jefferson curl
+  //   No training within 1 hour of waking
+  // ─── WHOOP ZONES ───────────────────────────────────────────────────
+  //   Green (67%+) : full intensity, RPE 8
+  //   Yellow (34–66%): train, −1 set, −15% load, no overspeed, RPE 7
+  //   Red (0–33%)  : mobility only — no gym
 
-  // Golf-specific exercises — TPI-focused (hip/pelvic restrictions, rotational power)
   defaultExercises: [
-    // ── Day A — Rotational Power ──────────────────────────────────
-    { name: "Cable Chop (High to Low)",       gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 2.5, startWeight: 20 },
-    { name: "Cable Chop (Low to High)",       gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 2.5, startWeight: 15 },
-    { name: "Pallof Press",                   gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 2.5, startWeight: 15 },
-    { name: "Half-Kneeling Cable Rotation",   gym: "arista", day: "dayA", repMin: 10, repMax: 12, step: 2.5, startWeight: 10 },
-    { name: "Lat Pulldown",                   gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 5,   startWeight: 40 },
-    { name: "DB Row",                         gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 2.5, startWeight: 20 },
-    { name: "Seated Cable Row",               gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 5,   startWeight: 35 },
-    { name: "Med Ball Rotational Slam",       gym: "arista", day: "dayA", repMin: 6,  repMax: 8,  step: 1,   startWeight: 4 },
-    { name: "Dead Bug",                       gym: "both",   day: "dayA", repMin: 8,  repMax: 10, step: 0,   startWeight: 0, bw: true },
-    { name: "Bird Dog",                       gym: "both",   day: "dayA", repMin: 10, repMax: 12, step: 0,   startWeight: 0, bw: true },
+    // ── Day A — Rotational Power (Monday · Arista) ──────────────────
+    { name: "DB Hip Thrust (bench)",        gym: "arista", day: "dayA", repMin: 10, repMax: 12, step: 0,   startWeight: 0,   bw: true,  note: "BW to start, both legs. Add DB when ready." },
+    { name: "Cable High-to-Low Chop",       gym: "arista", day: "dayA", repMin: 8,  repMax: 8,  step: 2.5, startWeight: 7.5,            leftPriority: true, note: "Left +1 set (5 sets L · 4 sets R)" },
+    { name: "Cable Pallof Press",           gym: "arista", day: "dayA", repMin: 10, repMax: 10, step: 2.5, startWeight: 7.5,            note: "3 sets each side" },
+    { name: "Cable Low-to-High Woodchop",   gym: "arista", day: "dayA", repMin: 10, repMax: 10, step: 2.5, startWeight: 5,              note: "3 sets each side" },
+    { name: "Lat Pulldown",                 gym: "arista", day: "dayA", repMin: 10, repMax: 12, step: 5,   startWeight: 20,             note: "Start light" },
+    { name: "DB Row",                       gym: "arista", day: "dayA", repMin: 10, repMax: 10, step: 2.5, startWeight: 10, leftPriority: true, note: "Left first · +1 set · 10–12kg" },
+    { name: "DB Lateral Raise",             gym: "arista", day: "dayA", repMin: 10, repMax: 10, step: 2,   startWeight: 4,              note: "4–6kg" },
+    { name: "Cable Anti-Rotation Hold",     gym: "arista", day: "dayA", repMin: 6,  repMax: 6,  step: 2.5, startWeight: 5,              note: "6 holds each side" },
+    { name: "Hanging Knee Raises",          gym: "arista", day: "dayA", repMin: 12, repMax: 12, step: 0,   startWeight: 0,  bw: true },
 
-    // ── Day B — Hip & Glute Power (TPI: hip + pelvic restrictions) ─
-    { name: "Romanian Deadlift",              gym: "arista", day: "dayB", repMin: 6,  repMax: 10, step: 5,   startWeight: 40 },
-    { name: "Hip Thrust (Barbell)",           gym: "arista", day: "dayB", repMin: 10, repMax: 12, step: 5,   startWeight: 40 },
-    { name: "Goblet Squat",                   gym: "arista", day: "dayB", repMin: 10, repMax: 12, step: 2.5, startWeight: 16 },
-    { name: "Lateral Lunge",                  gym: "both",   day: "dayB", repMin: 10, repMax: 12, step: 2.5, startWeight: 12 },
-    { name: "Single-Leg RDL",                 gym: "arista", day: "dayB", repMin: 8,  repMax: 10, step: 2.5, startWeight: 12 },
-    { name: "Single-Leg Glute Bridge",        gym: "both",   day: "dayB", repMin: 10, repMax: 12, step: 0,   startWeight: 0, bw: true },
-    { name: "Clamshell",                      gym: "both",   day: "dayB", repMin: 15, repMax: 20, step: 0,   startWeight: 0, bw: true },
-    { name: "Lateral Band Walk",              gym: "both",   day: "dayB", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
-    { name: "Copenhagen Plank",               gym: "both",   day: "dayB", repMin: 10, repMax: 15, step: 0,   startWeight: 0, bw: true },
-    { name: "Hip 90/90 Mobility",             gym: "both",   day: "dayB", repMin: 10, repMax: 12, step: 0,   startWeight: 0, bw: true },
+    // ── Day B — Lateral + Posterior Chain (Wednesday · Arista) ──────
+    { name: "DB Hip Thrust (bench)",        gym: "arista", day: "dayB", repMin: 10, repMax: 12, step: 0,   startWeight: 0,  bw: true,  note: "BW to start. Add DB when ready." },
+    { name: "DB Single Leg RDL",            gym: "arista", day: "dayB", repMin: 8,  repMax: 8,  step: 2.5, startWeight: 8,  leftPriority: true, note: "Left first · +1 set · 8–10kg" },
+    { name: "DB Lateral Lunge",             gym: "both",   day: "dayB", repMin: 10, repMax: 10, step: 2.5, startWeight: 6,  leftPriority: true, note: "Left first · +1 set · 6–8kg" },
+    { name: "KB Goblet Squat",              gym: "arista", day: "dayB", repMin: 10, repMax: 10, step: 4,   startWeight: 12,             note: "Light — form first" },
+    { name: "DB Bench Press",               gym: "arista", day: "dayB", repMin: 8,  repMax: 10, step: 2.5, startWeight: 12,             note: "Start light" },
+    { name: "Copenhagen Plank (bench)",     gym: "arista", day: "dayB", repMin: 20, repMax: 20, step: 0,   startWeight: 0,  bw: true,  note: "20s each side. Feet on bench." },
+    { name: "KB Suitcase Carry",            gym: "both",   day: "dayB", repMin: 20, repMax: 20, step: 4,   startWeight: 8,              note: "20 steps each side · light KB" },
+    { name: "Hanging Knee Raises",          gym: "arista", day: "dayB", repMin: 12, repMax: 12, step: 0,   startWeight: 0,  bw: true },
 
-    // ── Day C — Upper Body / Speed ────────────────────────────────
-    { name: "Med Ball Rotational Throw",      gym: "arista", day: "dayC", repMin: 6,  repMax: 8,  step: 1,   startWeight: 4 },
-    { name: "Med Ball Overhead Slam",         gym: "arista", day: "dayC", repMin: 6,  repMax: 8,  step: 1,   startWeight: 4 },
-    { name: "DB Incline Press",               gym: "arista", day: "dayC", repMin: 8,  repMax: 12, step: 2.5, startWeight: 20 },
-    { name: "Push-Up",                        gym: "both",   day: "dayC", repMin: 10, repMax: 15, step: 0,   startWeight: 0, bw: true },
-    { name: "Face Pull",                      gym: "arista", day: "dayC", repMin: 12, repMax: 15, step: 2.5, startWeight: 15 },
-    { name: "Band Pull-Apart",                gym: "both",   day: "dayC", repMin: 15, repMax: 20, step: 0,   startWeight: 0, bw: true },
-    { name: "Band External Rotation",         gym: "both",   day: "dayC", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
-    { name: "Prone Y Raise",                  gym: "both",   day: "dayC", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
-    { name: "Serratus Punch",                 gym: "both",   day: "dayC", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
-    { name: "Wrist Extension (Eccentric)",    gym: "both",   day: "dayC", repMin: 15, repMax: 20, step: 0,   startWeight: 0, bw: true },
+    // ── Day C — Vertical + Explosive (Friday · Arista) ─────────────
+    { name: "DB Hip Thrust (bench)",        gym: "arista", day: "dayC", repMin: 10, repMax: 12, step: 0,   startWeight: 0,  bw: true,  note: "BW to start." },
+    { name: "Broad Jump",                   gym: "arista", day: "dayC", repMin: 5,  repMax: 5,  step: 0,   startWeight: 0,  bw: true,  note: "Baseline 135cm → target 160cm by wk 8. Measure every session." },
+    { name: "Box Step-Up Jump",             gym: "arista", day: "dayC", repMin: 6,  repMax: 6,  step: 0,   startWeight: 0,  bw: true,  leftPriority: true, note: "Left first. BW." },
+    { name: "DB Split Squat",               gym: "both",   day: "dayC", repMin: 8,  repMax: 8,  step: 2,   startWeight: 0,  leftPriority: true, note: "Left first. BW → up to 4kg." },
+    { name: "KB Single Leg Deadlift",       gym: "arista", day: "dayC", repMin: 8,  repMax: 8,  step: 4,   startWeight: 8,  leftPriority: true, note: "Left first · +1 set · light KB" },
+    { name: "Cable Anti-Rotation Hold",     gym: "arista", day: "dayC", repMin: 6,  repMax: 6,  step: 2.5, startWeight: 5,              note: "6 holds each side" },
+    { name: "DB Lateral Raise",             gym: "both",   day: "dayC", repMin: 10, repMax: 10, step: 2,   startWeight: 4,              note: "4–6kg" },
+    { name: "Hanging Knee Raises",          gym: "arista", day: "dayC", repMin: 12, repMax: 12, step: 0,   startWeight: 0,  bw: true },
+
+    // ── Day D — Physique (Thursday · Arista or Home) ─────────────────
+    { name: "DB Incline Press",             gym: "both",   day: "dayD", repMin: 10, repMax: 10, step: 2.5, startWeight: 8,              note: "Per hand · 8–10kg. Home alt: DB Floor Press." },
+    { name: "Cable Chest Fly",              gym: "both",   day: "dayD", repMin: 12, repMax: 12, step: 2.5, startWeight: 5,              note: "Home alt: DB Chest Fly on floor." },
+    { name: "DB Lateral Raise",             gym: "both",   day: "dayD", repMin: 12, repMax: 12, step: 2,   startWeight: 4,              note: "4–6kg" },
+    { name: "Cable Face Pull",              gym: "both",   day: "dayD", repMin: 15, repMax: 15, step: 2.5, startWeight: 7.5,            note: "Home alt: DB Arnold Press." },
+    { name: "DB Curl",                      gym: "both",   day: "dayD", repMin: 10, repMax: 10, step: 2,   startWeight: 6,              note: "6–8kg" },
+    { name: "Cable Tricep Pushdown",        gym: "both",   day: "dayD", repMin: 12, repMax: 12, step: 2.5, startWeight: 10,             note: "Home alt: DB Overhead Tricep Ext." },
+    { name: "Hanging Knee Raises",          gym: "both",   day: "dayD", repMin: 15, repMax: 15, step: 0,   startWeight: 0,  bw: true,  note: "Home alt: Seated Knee Tuck (chair)." },
+    { name: "Cable Woodchop",               gym: "both",   day: "dayD", repMin: 10, repMax: 10, step: 2.5, startWeight: 7.5,            note: "Each side. Home alt: DB Side Bend." },
+    { name: "Cable Pallof Press",           gym: "both",   day: "dayD", repMin: 10, repMax: 10, step: 2.5, startWeight: 7.5,            note: "Home alt: KB Suitcase Hold 30s each." },
+    { name: "Dead Bug (on bench)",          gym: "both",   day: "dayD", repMin: 6,  repMax: 6,  step: 0,   startWeight: 0,  bw: true,  note: "Each side. Lower back flush to bench." },
+
+    // ── Sprints (Saturday · Real Grass) ─────────────────────────────
+    { name: "30m Sprint",                   gym: "both",   day: "sprints", repMin: 6, repMax: 8, step: 0,  startWeight: 0,  bw: true,  note: "90% effort. Walk back full recovery. Warm-up: 2 min walk. Cool-down: 2 min walk. Real grass only." },
   ]
 };
 </script>
@@ -195,6 +212,78 @@ img, video, canvas, svg { max-width: 100%; }
   justify-content: center;
 }
 .tab-icon svg { width: 100%; height: 100%; display: block; }
+/* ─── Primers & Cooldown banner ─── */
+.po-primers {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: rgba(110,231,183,0.07);
+  border: 1px solid rgba(110,231,183,0.18);
+  border-radius: 12px;
+  font-size: 12px;
+}
+.po-primers-label {
+  font-weight: 700;
+  color: var(--good);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.po-primers-items {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.po-primer-item {
+  padding: 3px 8px;
+  background: rgba(110,231,183,0.10);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.75);
+  font-size: 11px;
+}
+.po-cooldown-banner {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(125,211,252,0.07);
+  border: 1px solid rgba(125,211,252,0.18);
+  border-radius: 12px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap;
+}
+.po-cooldown-label {
+  font-weight: 700;
+  color: #7DD3FC;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* ─── Exercise note + left-priority badge ─── */
+.po-ex-note {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.5;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.po-ex-left-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.28);
+  border-radius: 5px;
+  color: var(--warn);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.po-ex-note-text { flex: 1; }
+
 .po-day-pill {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 12px;
@@ -1149,6 +1238,16 @@ img, video, canvas, svg { max-width: 100%; }
       </div>
     </div>
 
+    <!-- Primers banner — shown before every session -->
+    <div class="po-primers">
+      <div class="po-primers-label">🔋 Bernice's Primers — before every session</div>
+      <div class="po-primers-items">
+        <span class="po-primer-item">Banded Glute Bridge × 10</span>
+        <span class="po-primer-item">Plank × 30s</span>
+        <span class="po-primer-item">Suitcase Carry × 20 steps / side</span>
+      </div>
+    </div>
+
     <!-- Exercise -->
     <div class="po-sub-section">
       <div class="po-sub-title">Exercise</div>
@@ -1162,6 +1261,8 @@ img, video, canvas, svg { max-width: 100%; }
         </button>
       </div>
       <div class="po-no-ex" id="noExMsg" style="display:none">No exercises here yet. Tap <strong>+</strong> to add one.</div>
+      <!-- Exercise note + left-priority badge -->
+      <div class="po-ex-note" id="exNote" style="display:none"></div>
     </div>
 
     <!-- Log a set -->
@@ -1277,6 +1378,12 @@ img, video, canvas, svg { max-width: 100%; }
         <span class="po-tw-past-arrow" id="poTwPastArrow">▾</span>
       </button>
       <div class="po-tw-past-body" id="poTwPastBody" style="display:none"></div>
+
+      <!-- Cooldown reminder -->
+      <div class="po-cooldown-banner">
+        <span class="po-cooldown-label">🌬 Rory's Cooldown</span>
+        <span>4s inhale · 6s exhale · 3–4 min · seated or lying down</span>
+      </div>
     </div>
   </div>
 </div>
@@ -1392,7 +1499,7 @@ img, video, canvas, svg { max-width: 100%; }
   // device has its own copy. Export JSON from settings if you
   // want to back up or move to another device.
   // ============================================================
-  const LS_KEY = 'po_coach_v4';
+  const LS_KEY = 'po_coach_v5';
 
   function buildDefaultExercises() {
     return CONFIG.defaultExercises.map((e, i) => Object.assign({
@@ -1754,10 +1861,22 @@ img, video, canvas, svg { max-width: 100%; }
     row.dataset.value = String(active);
   }
 
+  function renderExNote() {
+    const el = $('exNote');
+    if (!el) return;
+    const ex = getCurrentEx();
+    if (!ex || (!ex.note && !ex.leftPriority)) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    let html = '';
+    if (ex.leftPriority) html += '<span class="po-ex-left-badge">⬅ LEFT FIRST</span>';
+    if (ex.note) html += '<span class="po-ex-note-text">' + escape(ex.note) + '</span>';
+    el.innerHTML = html;
+  }
+
   function renderAll() {
     renderDayPill();
     renderFilters(); renderSelect(); renderForm(); renderLastSet();
-    renderRepsRow();
+    renderRepsRow(); renderExNote();
     renderRx(); renderStats(); renderSparkline(); renderHistory();
     renderTodaysWorkout();
     renderPastWorkouts();
@@ -2669,7 +2788,7 @@ img, video, canvas, svg { max-width: 100%; }
   const SUPABASE_URL = 'https://obryogujguzgykipxntv.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_fEwA2_JQ2cfMsJSLlHDkyg_JO36mImE';
   const APP_KEY = 'po-coach';
-  const PC_SYNCED_KEYS = ['po_coach_v4', 'po_coach_workout_done', 'po_coach_weights'];
+  const PC_SYNCED_KEYS = ['po_coach_v5', 'po_coach_workout_done', 'po_coach_weights'];
 
   let pcSupa = null;
   let pcPushTimer = null;
