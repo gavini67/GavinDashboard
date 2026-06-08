@@ -59,21 +59,21 @@ const CONFIG = {
     { name: "Pallof Press",             gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 2.5, startWeight: 15 },
     { name: "Lat Pulldown",             gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 5,   startWeight: 40 },
     { name: "DB Row",                   gym: "arista", day: "dayA", repMin: 8,  repMax: 12, step: 2.5, startWeight: 20 },
-    { name: "Dead Bug",                 gym: "home",   day: "dayA", repMin: 8,  repMax: 10, step: 0,   startWeight: 0, bw: true },
+    { name: "Dead Bug",                 gym: "both",   day: "dayA", repMin: 8,  repMax: 10, step: 0,   startWeight: 0, bw: true },
 
     // Day B — Hip & Glute Power (TPI: hip + pelvic restrictions)
     { name: "Romanian Deadlift",        gym: "arista", day: "dayB", repMin: 6,  repMax: 10, step: 5,   startWeight: 40 },
     { name: "Hip Thrust",               gym: "arista", day: "dayB", repMin: 10, repMax: 12, step: 5,   startWeight: 40 },
-    { name: "Single-Leg Glute Bridge",  gym: "home",   day: "dayB", repMin: 10, repMax: 12, step: 0,   startWeight: 0, bw: true },
+    { name: "Single-Leg Glute Bridge",  gym: "both",   day: "dayB", repMin: 10, repMax: 12, step: 0,   startWeight: 0, bw: true },
     { name: "Single-Leg RDL",           gym: "arista", day: "dayB", repMin: 8,  repMax: 10, step: 2.5, startWeight: 12 },
-    { name: "Lateral Band Walk",        gym: "home",   day: "dayB", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
+    { name: "Lateral Band Walk",        gym: "both",   day: "dayB", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
 
     // Day C — Upper / Speed
     { name: "Med Ball Rotational Throw",gym: "arista", day: "dayC", repMin: 6,  repMax: 8,  step: 1,   startWeight: 4 },
     { name: "DB Press",                 gym: "arista", day: "dayC", repMin: 8,  repMax: 12, step: 2.5, startWeight: 20 },
     { name: "Face Pull",                gym: "arista", day: "dayC", repMin: 12, repMax: 15, step: 2.5, startWeight: 15 },
-    { name: "Band External Rotation",   gym: "home",   day: "dayC", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
-    { name: "Serratus Punch",           gym: "home",   day: "dayC", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
+    { name: "Band External Rotation",   gym: "both",   day: "dayC", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
+    { name: "Serratus Punch",           gym: "both",   day: "dayC", repMin: 12, repMax: 15, step: 0,   startWeight: 0, bw: true },
   ]
 };
 </script>
@@ -1377,7 +1377,7 @@ img, video, canvas, svg { max-width: 100%; }
   // device has its own copy. Export JSON from settings if you
   // want to back up or move to another device.
   // ============================================================
-  const LS_KEY = 'po_coach_v2';
+  const LS_KEY = 'po_coach_v3';
 
   function buildDefaultExercises() {
     return CONFIG.defaultExercises.map((e, i) => Object.assign({
@@ -2654,7 +2654,7 @@ img, video, canvas, svg { max-width: 100%; }
   const SUPABASE_URL = 'https://obryogujguzgykipxntv.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_fEwA2_JQ2cfMsJSLlHDkyg_JO36mImE';
   const APP_KEY = 'po-coach';
-  const PC_SYNCED_KEYS = ['po_coach_v2', 'po_coach_workout_done', 'po_coach_weights'];
+  const PC_SYNCED_KEYS = ['po_coach_v3', 'po_coach_workout_done', 'po_coach_weights'];
 
   let pcSupa = null;
   let pcPushTimer = null;
